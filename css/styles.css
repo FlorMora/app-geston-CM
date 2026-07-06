@@ -1,39 +1,43 @@
 /* ==========================================================
-   Atelier — gestión de contenido para marcas de clientes
-   Estética: hueso/crema, serif elegante, un acento cálido
+   Florencia Mora CM — gestión de contenido para marcas
+   Estética: azul noche profesional, degradé azul→violeta,
+   Montserrat (títulos) + DM Sans (texto), alto contraste
    ========================================================== */
 
 :root {
-  --bg: #F7F3EB;            /* hueso */
-  --bg-soft: #F1ECE1;       /* crema más profunda */
-  --surface: #FFFDF8;       /* tarjetas */
-  --ink: #2C2823;           /* carbón cálido */
-  --ink-soft: #6E675C;      /* texto secundario */
-  --ink-faint: #9A9285;
-  --line: #E5DECF;          /* bordes */
-  --accent: #B05730;        /* terracota — único acento cálido */
-  --accent-soft: #F3E3D8;
-  --danger: #A33B2E;
+  --bg: #12141B;            /* azul noche */
+  --bg-soft: #1D212C;       /* panel elevado */
+  --surface: #1A1E28;       /* tarjetas */
+  --ink: #F2F4F8;           /* texto principal */
+  --ink-soft: #ABB3C2;      /* texto secundario */
+  --ink-faint: #808A9B;     /* etiquetas */
+  --line: #2B3140;          /* bordes */
+  --accent: #7C6CF0;        /* violeta — acento único */
+  --accent-2: #5E7BF7;      /* azul del degradé */
+  --accent-grad: linear-gradient(135deg, #5E7BF7, #9C5CF6);
+  --accent-soft: rgba(124, 108, 240, 0.16);
+  --danger: #F08A7B;
+  --danger-bg: rgba(240, 122, 106, 0.16);
 
   /* Estados del flujo de trabajo */
-  --st-idea: #8D8474;
-  --st-idea-bg: #EEEAE0;
-  --st-borrador: #A87E1C;
-  --st-borrador-bg: #F4E9CC;
-  --st-enviado: #5E6FA3;
-  --st-enviado-bg: #E4E7F2;
-  --st-aprobado: #4F7D4F;
-  --st-aprobado-bg: #E1ECDD;
-  --st-publicado: #3A3630;
-  --st-publicado-bg: #E7E3DA;
+  --st-idea: #AEB6C4;
+  --st-idea-bg: rgba(174, 182, 196, 0.14);
+  --st-borrador: #E7BC55;
+  --st-borrador-bg: rgba(231, 188, 85, 0.14);
+  --st-enviado: #8FA3F0;
+  --st-enviado-bg: rgba(143, 163, 240, 0.17);
+  --st-aprobado: #7ED08D;
+  --st-aprobado-bg: rgba(126, 208, 141, 0.14);
+  --st-publicado: #98A0AD;
+  --st-publicado-bg: rgba(152, 160, 173, 0.12);
 
-  --serif: "Fraunces", Georgia, "Times New Roman", serif;
-  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display: "Montserrat", -apple-system, "Segoe UI", sans-serif;
+  --sans: "DM Sans", -apple-system, "Segoe UI", sans-serif;
 
   --radius: 14px;
   --radius-sm: 9px;
-  --shadow: 0 1px 2px rgba(60, 50, 35, 0.05), 0 6px 24px -8px rgba(60, 50, 35, 0.10);
-  --shadow-lift: 0 2px 4px rgba(60, 50, 35, 0.06), 0 16px 40px -12px rgba(60, 50, 35, 0.18);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 6px 24px -8px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 16px 40px -12px rgba(0, 0, 0, 0.55);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,8 +57,8 @@ body {
 button { font-family: inherit; cursor: pointer; }
 
 h1, h2, h3, .serif {
-  font-family: var(--serif);
-  font-weight: 500;
+  font-family: var(--display);
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -64,7 +68,7 @@ h1, h2, h3, .serif {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: linear-gradient(to bottom, var(--bg) 78%, rgba(247, 243, 235, 0));
+  background: linear-gradient(to bottom, var(--bg) 78%, rgba(18, 20, 27, 0));
   padding-top: env(safe-area-inset-top);
 }
 
@@ -75,21 +79,24 @@ h1, h2, h3, .serif {
 }
 
 .wordmark {
-  font-family: var(--serif);
-  font-size: 21px;
-  font-weight: 600;
-  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--ink);
   margin-bottom: 12px;
 }
-.wordmark::after {
-  content: "";
-  display: inline-block;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-left: 5px;
-  vertical-align: super;
+.cm-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--accent-grad);
+  color: #FFFFFF;
 }
 
 .brand-selector {
@@ -127,9 +134,9 @@ h1, h2, h3, .serif {
 .brand-chip.active {
   background: var(--ink);
   border-color: var(--ink);
-  color: #FBF8F1;
+  color: #12141B;
 }
-.brand-chip.active .dot { box-shadow: 0 0 0 3px rgba(255,255,255,0.22); }
+.brand-chip.active .dot { box-shadow: 0 0 0 3px rgba(18, 20, 27, 0.18); }
 
 /* ---------- Layout principal ---------- */
 
@@ -142,9 +149,9 @@ h1, h2, h3, .serif {
 .section { margin-bottom: 26px; }
 
 .section-title {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 22px;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 4px;
 }
 .section-sub {
@@ -208,7 +215,7 @@ h1, h2, h3, .serif {
   letter-spacing: 0;
 }
 .task-group-label.alert { color: var(--danger); }
-.task-group-label.alert .count { background: #F3DFDB; color: var(--danger); }
+.task-group-label.alert .count { background: var(--danger-bg); color: var(--danger); }
 
 .task-item {
   display: flex;
@@ -334,7 +341,7 @@ h1, h2, h3, .serif {
 }
 .week-day.today .dow { color: var(--accent); }
 .week-day .dnum {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 17px;
   margin: 1px 0 5px;
 }
@@ -384,15 +391,15 @@ h1, h2, h3, .serif {
   margin-bottom: 3px;
 }
 .brand-summary-name {
-  font-family: var(--serif);
-  font-size: 17px;
-  font-weight: 500;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
 }
 .late-badge {
   font-size: 11px;
   font-weight: 600;
   color: var(--danger);
-  background: #F3DFDB;
+  background: var(--danger-bg);
   border-radius: 999px;
   padding: 2px 9px;
   white-space: nowrap;
@@ -450,7 +457,7 @@ h1, h2, h3, .serif {
 .filter-chip.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #FDF9F3;
+  color: #FFFFFF;
 }
 
 .date-group-label {
@@ -524,7 +531,7 @@ h1, h2, h3, .serif {
 }
 .meta-chip.brand-tag {
   color: var(--item-brand);
-  background: color-mix(in srgb, var(--item-brand) 12%, white);
+  background: color-mix(in srgb, var(--item-brand) 16%, transparent);
 }
 .meta-chip svg { width: 11px; height: 11px; }
 .overdue-tag {
@@ -555,7 +562,7 @@ h1, h2, h3, .serif {
   display: flex;
   justify-content: center;
   gap: 4px;
-  background: rgba(255, 253, 248, 0.92);
+  background: rgba(18, 20, 27, 0.92);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--line);
@@ -590,9 +597,9 @@ h1, h2, h3, .serif {
   width: 54px; height: 54px;
   border-radius: 50%;
   border: none;
-  background: var(--accent);
-  color: #FDF9F3;
-  box-shadow: 0 6px 20px -4px rgba(176, 87, 48, 0.55);
+  background: var(--accent-grad);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px -4px rgba(124, 108, 240, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -609,7 +616,7 @@ h1, h2, h3, .serif {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(44, 40, 35, 0.42);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-end;
@@ -688,7 +695,7 @@ input[type="text"], input[type="date"], select, textarea {
   appearance: none;
 }
 select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E675C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ABB3C2' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 34px;
@@ -729,7 +736,7 @@ textarea { resize: vertical; }
 }
 .brand-radio input:checked + .opt {
   border-color: var(--opt-color);
-  background: color-mix(in srgb, var(--opt-color) 12%, white);
+  background: color-mix(in srgb, var(--opt-color) 16%, transparent);
   color: var(--ink);
 }
 .state-radio .opt {
@@ -765,13 +772,13 @@ textarea { resize: vertical; }
 }
 .btn:active { transform: scale(0.97); }
 .btn-primary {
-  background: var(--accent);
-  color: #FDF9F3;
-  box-shadow: 0 4px 14px -4px rgba(176, 87, 48, 0.5);
+  background: var(--accent-grad);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px -4px rgba(124, 108, 240, 0.5);
 }
 .btn-danger {
   background: none;
-  border: 1px solid #E3C7C2;
+  border: 1px solid rgba(240, 122, 106, 0.4);
   color: var(--danger);
   margin-right: auto;
 }
@@ -785,7 +792,7 @@ textarea { resize: vertical; }
   transform: translateX(-50%) translateY(8px);
   z-index: 70;
   background: var(--ink);
-  color: #FBF8F1;
+  color: #12141B;
   font-size: 13px;
   font-weight: 500;
   padding: 9px 18px;
@@ -806,9 +813,9 @@ textarea { resize: vertical; }
   margin-bottom: 12px;
 }
 .cal-title {
-  font-family: var(--serif);
-  font-size: 22px;
-  font-weight: 500;
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 600;
   flex: 1;
 }
 .cal-title::first-letter { text-transform: uppercase; }
@@ -943,7 +950,7 @@ textarea { resize: vertical; }
   background: var(--surface);
 }
 .cal-dnum {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 13px;
   line-height: 1.2;
   padding: 1px 3px;
@@ -966,7 +973,7 @@ textarea { resize: vertical; }
   height: 15px;
   margin-top: 2px;
   padding: 0 3px;
-  color: #FDFBF6;
+  color: #12141B;
   font-size: 9.5px;
   font-weight: 600;
   overflow: hidden;
@@ -1006,7 +1013,7 @@ textarea { resize: vertical; }
   position: fixed;
   inset: 0;
   z-index: 55;
-  background: rgba(44, 40, 35, 0.42);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-end;
@@ -1123,9 +1130,9 @@ textarea { resize: vertical; }
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--serif);
-  font-size: 17px;
-  font-weight: 500;
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
   margin-bottom: 10px;
 }
 .idea-group-head .dot {
@@ -1171,9 +1178,9 @@ textarea { resize: vertical; }
 .idea-card.used { opacity: 0.55; }
 
 .idea-title {
-  font-family: var(--serif);
-  font-size: 16px;
-  font-weight: 500;
+  font-family: var(--display);
+  font-size: 14.5px;
+  font-weight: 600;
   line-height: 1.3;
 }
 .idea-hook {

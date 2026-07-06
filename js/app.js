@@ -1,5 +1,5 @@
 /* ==========================================================
-   Atelier — app de gestión para Community Manager freelance
+   Florencia Mora CM — app de gestión multi-marca
    La MARCA es la unidad central. Datos en localStorage.
    ========================================================== */
 
@@ -38,11 +38,11 @@
   /* ---------- Efemérides argentinas ---------- */
 
   const RUBRO_META = {
-    salud:        { label: "Salud",        color: "#4F7D4F" },
-    danza:        { label: "Danza",        color: "#8A64A8" },
-    belleza:      { label: "Belleza",      color: "#A9822F" },
-    construccion: { label: "Construcción", color: "#8D6E4F" },
-    general:      { label: "General",      color: "#9A9285" },
+    salud:        { label: "Salud",        color: "#7ED08D" },
+    danza:        { label: "Danza",        color: "#B08AD6" },
+    belleza:      { label: "Belleza",      color: "#E7BC55" },
+    construccion: { label: "Construcción", color: "#C09A6B" },
+    general:      { label: "General",      color: "#98A0AD" },
   };
 
   // d: día fijo · nth: {wd: día de semana (0=dom), n: enésimo} calculado por año
@@ -96,7 +96,7 @@
       id: "jasmin",
       rubro: "salud",
       name: "Jasmin Rivas",
-      color: "#C06A5B",
+      color: "#E08A7A",
       descriptor: "Podóloga",
       objective: "Conversión a turnos",
       pillars: ["Educación", "Casos y resultados", "Turnos y promoción", "Confianza"],
@@ -105,7 +105,7 @@
       id: "alquimia",
       rubro: "salud",
       name: "Alquimia Kinesio",
-      color: "#7D8E6E",
+      color: "#9CBF8B",
       descriptor: "Ortopedia · plantillas ortopédicas",
       objective: "Educar + turnos",
       pillars: ["Educación", "Producto", "Testimonios", "Turnos"],
@@ -114,7 +114,7 @@
       id: "linax",
       rubro: "salud",
       name: "Linax",
-      color: "#4E7B9E",
+      color: "#6E9FD4",
       descriptor: "Suplementos naturales · web y Mercado Libre · foco Facebook",
       objective: "Funnel Atraer–Nutrir–Convertir",
       pillars: ["Atraer", "Nutrir", "Convertir"],
@@ -123,7 +123,7 @@
       id: "seissiete",
       rubro: "danza",
       name: "Seis Siete Va",
-      color: "#8A64A8",
+      color: "#B08AD6",
       descriptor: "Academia de danza",
       objective: "Comunidad + inscripciones",
       pillars: ["Comunidad", "Clases", "Inscripciones", "Detrás de escena"],
@@ -132,7 +132,7 @@
       id: "docta",
       rubro: "belleza",
       name: "Docta Fragancias",
-      color: "#A9822F",
+      color: "#D4A94C",
       descriptor: "Perfumes árabes · público masculino",
       objective: "Ventas",
       pillars: ["Producto", "Deseo y lifestyle", "Prueba social", "Ofertas"],
@@ -285,6 +285,22 @@
       data.ideas = seedIdeas();
       changed = true;
     }
+    // Rediseño oscuro: aclara los colores de marca originales para que
+    // sigan siendo legibles; respeta cualquier color personalizado
+    const colorRefresh = {
+      jasmin: ["#C06A5B", "#E08A7A"],
+      alquimia: ["#7D8E6E", "#9CBF8B"],
+      linax: ["#4E7B9E", "#6E9FD4"],
+      seissiete: ["#8A64A8", "#B08AD6"],
+      docta: ["#A9822F", "#D4A94C"],
+    };
+    data.brands.forEach(b => {
+      const r = colorRefresh[b.id];
+      if (r && b.color === r[0]) {
+        b.color = r[1];
+        changed = true;
+      }
+    });
     if (changed) persist(data);
     return data;
   }

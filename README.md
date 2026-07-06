@@ -1,4 +1,4 @@
-# Atelier — Gestión de contenido para Community Manager freelance
+# Florencia Mora CM — Gestión de contenido multi-marca
 
 Aplicación web pensada alrededor del concepto de **marca** como unidad central:
 gestiona simultáneamente el contenido de 5 marcas de clientes, cada una con su
@@ -49,6 +49,12 @@ Los datos se guardan en el navegador (**localStorage**), no se pierden al cerrar
 - **Flujo de estados con color propio en todas las vistas**:
   Idea → Borrador → Enviado al cliente → Aprobado → Publicado.
   Botón de avance rápido al siguiente estado desde cualquier tarjeta.
+
+## Diseño
+
+Estética profesional en azul noche con acentos en degradé azul→violeta,
+tipografías **Montserrat** (títulos) y **DM Sans** (texto), pensada para alta
+legibilidad en celular y escritorio.
 
 ## Marcas precargadas
 

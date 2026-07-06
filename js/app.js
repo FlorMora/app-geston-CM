@@ -217,6 +217,33 @@
     ];
   }
 
+  function seedIdeas() {
+    let n = 0;
+    const mk = (brandId, title, format, hook, pillar, tag) => ({
+      id: "idea-seed-" + (++n),
+      brandId, title, format,
+      hook: hook || "",
+      pillar: pillar || "",
+      tag: tag || "",
+      usedAt: null,
+      createdAt: Date.now() - n, // conserva el orden
+    });
+    return [
+      mk("jasmin", "Mitos del pie diabético", "carrusel",
+        "5 cosas que te dijeron sobre el pie diabético que son falsas", "Educación", "Día Mundial de la Diabetes"),
+      mk("jasmin", "Antes y después: onicomicosis", "reel",
+        "El cambio real en 3 sesiones (con permiso de la paciente)", "Casos y resultados"),
+      mk("alquimia", "¿Las plantillas son para siempre?", "reel",
+        "La pregunta que todos hacen en el consultorio", "Educación"),
+      mk("linax", "Magnesio y descanso", "post",
+        "¿Dormís mal? Puede que te esté faltando esto", "Atraer", "Tendencia: bienestar y sueño"),
+      mk("seissiete", "POV: tu primera clase", "reel",
+        "Lo que se siente entrar sin saber nada de danza", "Comunidad"),
+      mk("docta", "Qué perfume regalar", "carrusel",
+        "3 fragancias árabes seguras para regalar sin conocer al otro", "Producto", "Día del Padre"),
+    ];
+  }
+
   /* ---------- Estado de la app ---------- */
 
   let db = load();
@@ -226,6 +253,7 @@
     filterState: "all",    // filtro en vista contenido
     calMonth: null,        // { y, m } del mes visible en el calendario
     calState: "all",       // filtro de estado en el calendario
+    ideaQuery: "",         // búsqueda en el banco de ideas
   };
 
   function load() {
@@ -238,7 +266,7 @@
         }
       }
     } catch (e) { /* datos corruptos: se re-inicializa */ }
-    const fresh = { brands: SEED_BRANDS, contents: seedContents() };
+    const fresh = { brands: SEED_BRANDS, contents: seedContents(), ideas: seedIdeas() };
     persist(fresh);
     return fresh;
   }
@@ -253,6 +281,10 @@
         changed = true;
       }
     });
+    if (!Array.isArray(data.ideas)) {
+      data.ideas = seedIdeas();
+      changed = true;
+    }
     if (changed) persist(data);
     return data;
   }
@@ -845,6 +877,274 @@
     render();
   }
 
+  /* ---------- Banco de ideas ---------- */
+
+  function renderIdeas() {
+    const total = (ui.brand === "all"
+      ? db.ideas
+      : db.ideas.filter(i => i.brandId === ui.brand)).length;
+
+    $("#mainView").innerHTML = `
+      <h1 class="section-title">Banco de ideas</h1>
+      <p class="section-sub">${total} idea${total !== 1 ? "s" : ""} guardada${total !== 1 ? "s" : ""} · de acá salen los posts</p>
+      <div class="idea-toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="text" id="ideaSearch" placeholder="Buscar por título, gancho, pilar…" value="${esc(ui.ideaQuery)}" />
+        </div>
+        <button class="btn-import" id="btnImport">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+          Importar
+        </button>
+      </div>
+      <div id="ideaList"></div>
+    `;
+
+    updateIdeaList();
+
+    $("#ideaSearch").addEventListener("input", e => {
+      ui.ideaQuery = e.target.value;
+      updateIdeaList();
+    });
+    $("#btnImport").addEventListener("click", openImport);
+  }
+
+  function updateIdeaList() {
+    const q = ui.ideaQuery.trim().toLowerCase();
+    const matches = i => !q ||
+      [i.title, i.hook, i.pillar, i.tag].some(v => (v || "").toLowerCase().includes(q));
+
+    const scope = ui.brand === "all" ? db.brands : [brandById(ui.brand)].filter(Boolean);
+
+    const ideaCard = (i, b) => `
+      <div class="idea-card ${i.usedAt ? "used" : ""}" style="--item-brand:${b.color}" data-idea="${i.id}">
+        <div class="idea-title">${esc(i.title)}</div>
+        ${i.hook ? `<div class="idea-hook">“${esc(i.hook)}”</div>` : ""}
+        <div class="content-card-meta">
+          <span class="meta-chip">${FORMAT_LABEL[i.format] || esc(i.format)}</span>
+          ${i.pillar ? `<span class="meta-chip">${esc(i.pillar)}</span>` : ""}
+          ${i.tag ? `<span class="meta-chip tag-chip">✦ ${esc(i.tag)}</span>` : ""}
+          ${i.usedAt ? `<span class="meta-chip used-chip">✓ programada</span>` : ""}
+        </div>
+        <button class="tocal-btn" data-tocal="${i.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4M16 2v4"/><path d="M12 12v6M9 15h6"/></svg>
+          Pasar al calendario
+        </button>
+      </div>`;
+
+    const groups = scope.map(b => {
+      const ideas = db.ideas
+        .filter(i => i.brandId === b.id && matches(i))
+        .sort((a, x) => (a.usedAt ? 1 : 0) - (x.usedAt ? 1 : 0) || x.createdAt - a.createdAt);
+      if (!ideas.length) return "";
+      return `
+        <div class="idea-group">
+          ${ui.brand === "all" ? `
+          <div class="idea-group-head" style="--item-brand:${b.color}">
+            <span class="dot"></span>${esc(b.name)}<span class="count">${ideas.length}</span>
+          </div>` : ""}
+          <div class="idea-grid">${ideas.map(i => ideaCard(i, b)).join("")}</div>
+        </div>`;
+    }).join("");
+
+    $("#ideaList").innerHTML = groups || `
+      <div class="empty-list">
+        <div class="serif">${q ? "Nada coincide con la búsqueda" : "El banco está vacío"}</div>
+        <p>${q ? "Probá con otra palabra." : "Creá una idea con el botón + o importá una lista."}</p>
+      </div>`;
+
+    // Pasar al calendario: post precargado, solo falta la fecha
+    $("#ideaList").querySelectorAll("[data-tocal]").forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const i = db.ideas.find(x => x.id === btn.dataset.tocal);
+        if (!i) return;
+        openEditor(null, {
+          brandId: i.brandId,
+          title: i.title,
+          format: FORMAT_LABEL[i.format] ? i.format : "post",
+          pillar: i.pillar || null,
+          copy: i.hook || "",
+          notes: i.tag ? `Efeméride / tendencia: ${i.tag}` : "",
+          fromIdea: i.id,
+          focusDate: true,
+        });
+      });
+    });
+    $("#ideaList").querySelectorAll("[data-idea]").forEach(card => {
+      card.addEventListener("click", () => openIdeaEditor(card.dataset.idea));
+    });
+  }
+
+  /* ---------- Editor de idea (modal) ---------- */
+
+  const ideaBackdrop = $("#ideaBackdrop");
+  const ideaForm = $("#ideaForm");
+
+  function openIdeaEditor(id) {
+    const editing = id ? db.ideas.find(i => i.id === id) : null;
+    $("#ideaModalTitle").textContent = editing ? "Editar idea" : "Nueva idea";
+    $("#iDelete").hidden = !editing;
+    $("#iId").value = editing ? editing.id : "";
+
+    const selectedBrand = editing ? editing.brandId
+      : (ui.brand !== "all" ? ui.brand : db.brands[0].id);
+    $("#iBrand").innerHTML = db.brands.map(b => `
+      <label>
+        <input type="radio" name="ibrand" value="${b.id}" ${b.id === selectedBrand ? "checked" : ""} />
+        <span class="opt" style="--opt-color:${b.color}">
+          <span class="dot" style="background:${b.color}"></span>${esc(b.name)}
+        </span>
+      </label>`).join("");
+
+    const selectedFormat = editing ? editing.format : FORMATS[0].id;
+    $("#iFormat").innerHTML = FORMATS.map(f =>
+      `<option value="${f.id}" ${f.id === selectedFormat ? "selected" : ""}>${esc(f.label)}</option>`).join("");
+
+    $("#iPillar").innerHTML = pillarOptions(selectedBrand, editing ? editing.pillar : null);
+    $("#iBrand").querySelectorAll("input").forEach(r => {
+      r.addEventListener("change", () => {
+        $("#iPillar").innerHTML = pillarOptions(r.value, null);
+      });
+    });
+
+    $("#iTitle").value = editing ? editing.title : "";
+    $("#iHook").value = editing ? editing.hook : "";
+    $("#iTag").value = editing ? editing.tag : "";
+
+    ideaBackdrop.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeIdeaEditor() {
+    ideaBackdrop.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  ideaForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const id = $("#iId").value;
+    const data = {
+      brandId: ideaForm.querySelector('input[name="ibrand"]:checked').value,
+      title: $("#iTitle").value.trim(),
+      format: $("#iFormat").value,
+      pillar: $("#iPillar").value,
+      hook: $("#iHook").value.trim(),
+      tag: $("#iTag").value.trim(),
+    };
+    if (!data.title) return;
+
+    if (id) {
+      const i = db.ideas.find(x => x.id === id);
+      Object.assign(i, data);
+      toast("Idea actualizada");
+    } else {
+      db.ideas.push({ id: uid(), usedAt: null, createdAt: Date.now(), ...data });
+      toast("Idea guardada");
+    }
+    persist();
+    closeIdeaEditor();
+    render();
+  });
+
+  $("#iDelete").addEventListener("click", () => {
+    const id = $("#iId").value;
+    const i = db.ideas.find(x => x.id === id);
+    if (!i) return;
+    if (!confirm(`¿Eliminar la idea "${i.title}"?`)) return;
+    db.ideas = db.ideas.filter(x => x.id !== id);
+    persist();
+    closeIdeaEditor();
+    toast("Idea eliminada");
+    render();
+  });
+
+  $("#ideaClose").addEventListener("click", closeIdeaEditor);
+  ideaBackdrop.addEventListener("click", e => {
+    if (e.target === ideaBackdrop) closeIdeaEditor();
+  });
+
+  /* ---------- Importar ideas en bloque ---------- */
+
+  const importBackdrop = $("#importBackdrop");
+
+  function openImport() {
+    const selectedBrand = ui.brand !== "all" ? ui.brand : db.brands[0].id;
+    $("#impBrand").innerHTML = db.brands.map(b => `
+      <label>
+        <input type="radio" name="impbrand" value="${b.id}" ${b.id === selectedBrand ? "checked" : ""} />
+        <span class="opt" style="--opt-color:${b.color}">
+          <span class="dot" style="background:${b.color}"></span>${esc(b.name)}
+        </span>
+      </label>`).join("");
+    $("#impText").value = "";
+    importBackdrop.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeImport() {
+    importBackdrop.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function normalizeFormat(s) {
+    const v = (s || "").toLowerCase();
+    if (v.includes("reel") || v.includes("video")) return "reel";
+    if (v.includes("carru")) return "carrusel";
+    if (v.includes("histor") || v.includes("story") || v.includes("storie")) return "historia";
+    return "post";
+  }
+
+  // Acepta líneas "título | formato | gancho | pilar | etiqueta" con | ; o ,
+  // más listas markdown (-, *, 1.), negritas ** y tablas con | ... |
+  function parseIdeasBlock(text) {
+    const out = [];
+    for (const raw of text.split(/\r?\n/)) {
+      let line = raw.trim();
+      if (!line) continue;
+      if (/^\|?[\s:|-]+\|?$/.test(line)) continue;            // separador de tabla
+      line = line.replace(/^[-*•]\s+/, "").replace(/^\d+[.)]\s+/, "");
+      if (line.startsWith("|")) line = line.slice(1);
+      if (line.endsWith("|")) line = line.slice(0, -1);
+      const sep = line.includes("|") ? "|" : (line.includes(";") ? ";" : ",");
+      const parts = line.split(sep).map(p =>
+        p.trim().replace(/^\*\*/, "").replace(/\*\*$/, "").trim());
+      const [title, format, hook, pillar, tag] = parts;
+      if (!title) continue;
+      if (/^t[íi]tulo$/i.test(title)) continue;               // fila de encabezado
+      out.push({
+        title,
+        format: normalizeFormat(format),
+        hook: hook || "",
+        pillar: pillar || "",
+        tag: tag || "",
+      });
+    }
+    return out;
+  }
+
+  $("#importForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const brandId = $("#importForm").querySelector('input[name="impbrand"]:checked').value;
+    const parsed = parseIdeasBlock($("#impText").value);
+    if (!parsed.length) {
+      toast("No se encontraron ideas en el texto");
+      return;
+    }
+    parsed.forEach(p => db.ideas.push({
+      id: uid(), brandId, usedAt: null, createdAt: Date.now(), ...p,
+    }));
+    persist();
+    closeImport();
+    toast(`${parsed.length} idea${parsed.length > 1 ? "s" : ""} importada${parsed.length > 1 ? "s" : ""}`);
+    render();
+  });
+
+  $("#importClose").addEventListener("click", closeImport);
+  importBackdrop.addEventListener("click", e => {
+    if (e.target === importBackdrop) closeImport();
+  });
+
   /* ---------- Editor (modal) ---------- */
 
   const backdrop = $("#modalBackdrop");
@@ -877,31 +1177,44 @@
       </label>`).join("");
 
     // Formatos
+    const selectedFormat = editing ? editing.format : (prefill.format || FORMATS[0].id);
     $("#fFormat").innerHTML = FORMATS.map(f =>
-      `<option value="${f.id}" ${editing && editing.format === f.id ? "selected" : ""}>${esc(f.label)}</option>`).join("");
+      `<option value="${f.id}" ${f.id === selectedFormat ? "selected" : ""}>${esc(f.label)}</option>`).join("");
 
     $("#fTitle").value = editing ? editing.title : (prefill.title || "");
     $("#fDate").value = editing ? (editing.date || "") : (prefill.date || todayISO());
-    $("#fCopy").value = editing ? editing.copy : "";
-    $("#fNotes").value = editing ? editing.notes : "";
+    $("#fCopy").value = editing ? editing.copy : (prefill.copy || "");
+    $("#fNotes").value = editing ? editing.notes : (prefill.notes || "");
 
-    refreshPillars(selectedBrand, editing ? editing.pillar : null);
+    refreshPillars(selectedBrand, editing ? editing.pillar : (prefill.pillar || null));
 
     // los pilares dependen de la marca elegida
     $("#fBrand").querySelectorAll("input").forEach(r => {
       r.addEventListener("change", () => refreshPillars(r.value, null));
     });
 
+    editorFromIdea = prefill.fromIdea || null;
+
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
+
+    // Al venir de una idea, todo llega precargado: solo falta elegir la fecha
+    if (prefill.focusDate) setTimeout(() => $("#fDate").focus(), 250);
+  }
+
+  let editorFromIdea = null; // idea de origen cuando se pasa al calendario
+
+  function pillarOptions(brandId, selected) {
+    const b = brandById(brandId);
+    const pillars = b ? [...b.pillars] : [];
+    // un pilar importado que no está en la lista de la marca se conserva
+    if (selected && !pillars.includes(selected)) pillars.push(selected);
+    return `<option value="">— Sin pilar —</option>` +
+      pillars.map(p => `<option value="${esc(p)}" ${p === selected ? "selected" : ""}>${esc(p)}</option>`).join("");
   }
 
   function refreshPillars(brandId, selected) {
-    const b = brandById(brandId);
-    const pillars = b ? b.pillars : [];
-    $("#fPillar").innerHTML =
-      `<option value="">— Sin pilar —</option>` +
-      pillars.map(p => `<option value="${esc(p)}" ${p === selected ? "selected" : ""}>${esc(p)}</option>`).join("");
+    $("#fPillar").innerHTML = pillarOptions(brandId, selected);
   }
 
   function closeEditor() {
@@ -931,8 +1244,13 @@
       toast("Contenido actualizado");
     } else {
       db.contents.push({ id: uid(), createdAt: Date.now(), ...data });
+      if (editorFromIdea) {
+        const idea = db.ideas.find(i => i.id === editorFromIdea);
+        if (idea) idea.usedAt = Date.now();
+      }
       toast("Contenido creado");
     }
+    editorFromIdea = null;
     persist();
     closeEditor();
     render();
@@ -957,10 +1275,16 @@
   document.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
     if (!backdrop.hidden) closeEditor();
+    else if (!ideaBackdrop.hidden) closeIdeaEditor();
+    else if (!importBackdrop.hidden) closeImport();
     else if (!dayBackdrop.hidden) closeDayPanel();
   });
 
-  $("#fabNew").addEventListener("click", () => openEditor(null));
+  // El + crea según la vista: una idea en el banco, un contenido en el resto
+  $("#fabNew").addEventListener("click", () => {
+    if (ui.view === "ideas") openIdeaEditor(null);
+    else openEditor(null);
+  });
 
   /* ---------- Toast ---------- */
 
@@ -995,6 +1319,7 @@
       b.classList.toggle("active", b.dataset.view === ui.view));
     if (ui.view === "panel") renderPanel();
     else if (ui.view === "calendario") renderCalendario();
+    else if (ui.view === "ideas") renderIdeas();
     else renderContenido();
     window.scrollTo({ top: 0 });
   }

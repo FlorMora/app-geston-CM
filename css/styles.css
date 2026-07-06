@@ -1077,6 +1077,149 @@ textarea { resize: vertical; }
   to { transform: none; opacity: 1; }
 }
 
+/* ---------- Banco de ideas ---------- */
+
+.idea-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.search-box {
+  flex: 1;
+  position: relative;
+}
+.search-box svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px; height: 15px;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+.search-box input {
+  padding-left: 36px;
+  background: var(--surface);
+}
+.btn-import {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.btn-import:hover { border-color: var(--accent); color: var(--accent); }
+.btn-import svg { width: 14px; height: 14px; }
+
+.idea-group { margin-bottom: 24px; }
+.idea-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.idea-group-head .dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--item-brand);
+}
+.idea-group-head .count {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  background: var(--bg-soft);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.idea-grid { display: grid; gap: 10px; }
+@media (min-width: 640px) {
+  .idea-grid { grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+}
+
+.idea-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 13px 14px 13px 16px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.idea-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--item-brand, var(--line));
+}
+.idea-card:hover { box-shadow: var(--shadow); }
+.idea-card.used { opacity: 0.55; }
+
+.idea-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.idea-hook {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+.idea-card .content-card-meta { margin-top: 8px; }
+.tag-chip {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.used-chip {
+  color: var(--st-aprobado);
+  background: var(--st-aprobado-bg);
+}
+
+.tocal-btn {
+  margin-top: 12px;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--accent);
+  background: none;
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.tocal-btn:hover { background: var(--accent-soft); }
+.tocal-btn svg { width: 13px; height: 13px; }
+
+.import-help {
+  font-size: 12px;
+  color: var(--ink-faint);
+  line-height: 1.55;
+  margin: -6px 0 14px;
+}
+.import-help b { color: var(--ink-soft); }
+
 /* Escritorio: un poco más de aire */
 @media (min-width: 720px) {
   body { font-size: 15.5px; }

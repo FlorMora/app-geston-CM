@@ -27,6 +27,16 @@ Los datos se guardan en el navegador (**localStorage**), no se pierden al cerrar
   resaltado. Filtro por estado arriba (la marca se filtra con el selector
   global). Al tocar un día se abre un panel lateral con los posts del día y la
   opción de crear uno nuevo con la fecha precargada.
+- **Banco de ideas**: tarjetas agrupadas por marca con buscador. Cada idea
+  tiene título corto, formato sugerido, gancho/ángulo, pilar y una etiqueta
+  opcional de efeméride o tendencia. El botón **"Pasar al calendario"** abre el
+  editor de post con todo precargado (marca, título, formato, pilar, el gancho
+  como copy inicial y la etiqueta en notas) y deja el cursor en la fecha: el
+  flujo idea → post programado es de dos toques. La idea queda marcada como
+  "programada". También se pueden **importar ideas en bloque** pegando una
+  lista markdown o CSV (título | formato | gancho | pilar | etiqueta): acepta
+  tablas markdown, listas con guiones o numeradas, y separadores `|`, `;` o
+  `,` — pensado para volcar estrategias mensuales generadas con Claude.
 - **Efemérides argentinas** precargadas en el calendario (Día de la Madre,
   Día Mundial de la Diabetes, Hot Sale, primavera, fiestas, vuelta a clases,
   cambios de estación…), etiquetadas por rubro (salud, danza, construcción,

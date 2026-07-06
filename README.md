@@ -21,6 +21,18 @@ Los datos se guardan en el navegador (**localStorage**), no se pierden al cerrar
   por atraso.
 - **Contenido**: listado agrupado por franja temporal (atrasados / hoy / esta
   semana / más adelante), con filtros por estado.
+- **Calendario**: calendario mensual a pantalla completa con navegación entre
+  meses. Cada día muestra sus posts como pastillas con el color de la marca y
+  el ícono del formato; los días sin contenido se ven apagados y el día de hoy
+  resaltado. Filtro por estado arriba (la marca se filtra con el selector
+  global). Al tocar un día se abre un panel lateral con los posts del día y la
+  opción de crear uno nuevo con la fecha precargada.
+- **Efemérides argentinas** precargadas en el calendario (Día de la Madre,
+  Día Mundial de la Diabetes, Hot Sale, primavera, fiestas, vuelta a clases,
+  cambios de estación…), etiquetadas por rubro (salud, danza, construcción,
+  belleza, general). Cuando una efeméride coincide con el rubro de una marca
+  que tiene pocos posts ese mes, aparece una sugerencia sutil que al tocarla
+  crea el contenido con marca y fecha ya cargadas.
 - **Piezas de contenido** con: marca, fecha programada, formato (reel, carrusel,
   historia, post estático), pilar de contenido (propio de cada marca), copy,
   estado y notas.

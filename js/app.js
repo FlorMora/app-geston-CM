@@ -345,6 +345,98 @@
     return c.state !== "publicado" && c.date && c.date < todayISO();
   }
 
+  /* ---------- Exportar / descargar por marca ---------- */
+
+  function slugify(s) {
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  }
+
+  function downloadFile(name, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function brandContentsSorted(brandId) {
+    return db.contents
+      .filter(c => c.brandId === brandId)
+      .sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"));
+  }
+
+  function csvCell(v) {
+    return '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  }
+
+  function exportCSV(brandId) {
+    const b = brandById(brandId);
+    const rows = brandContentsSorted(brandId);
+    if (!rows.length) { toast(`No hay contenido cargado de ${b.name}`); return; }
+    const head = ["Fecha", "Día", "Formato", "Pilar", "Título", "Copy", "Estado", "Notas"];
+    const lines = [head.map(csvCell).join(",")];
+    rows.forEach(c => {
+      const dia = c.date
+        ? parseISO(c.date).toLocaleDateString("es-AR", { weekday: "long" })
+        : "";
+      lines.push([
+        c.date || "sin fecha", dia, FORMAT_LABEL[c.format] || c.format,
+        c.pillar || "", c.title, c.copy || "", STATE_LABEL[c.state], c.notes || "",
+      ].map(csvCell).join(","));
+    });
+    // BOM para que Excel respete los acentos
+    downloadFile(`contenido-${slugify(b.name)}-${todayISO()}.csv`,
+      "﻿" + lines.join("\r\n"), "text/csv;charset=utf-8");
+    toast(`CSV de ${b.name} descargado`);
+  }
+
+  function exportCronograma(brandId) {
+    const b = brandById(brandId);
+    const rows = brandContentsSorted(brandId);
+    if (!rows.length) { toast(`No hay contenido cargado de ${b.name}`); return; }
+    let out = `CRONOGRAMA — ${b.name.toUpperCase()}\n` +
+      `${b.descriptor} · Objetivo: ${b.objective}\n` +
+      `Generado: ${fmtLong(todayISO())}\n`;
+    let lastDate;
+    rows.forEach(c => {
+      const key = c.date || "";
+      if (key !== lastDate) {
+        lastDate = key;
+        out += `\n════ ${c.date ? fmtLong(c.date).toUpperCase() : "SIN FECHA"} ════\n`;
+      }
+      out += `\n▸ ${c.title}\n`;
+      out += `  ${FORMAT_LABEL[c.format] || c.format}` +
+        (c.pillar ? ` · Pilar: ${c.pillar}` : "") +
+        ` · Estado: ${STATE_LABEL[c.state]}\n`;
+      if (c.copy) out += `  Copy: ${c.copy}\n`;
+      if (c.notes) out += `  Notas: ${c.notes}\n`;
+    });
+    downloadFile(`cronograma-${slugify(b.name)}-${todayISO()}.txt`,
+      out, "text/plain;charset=utf-8");
+    toast(`Cronograma de ${b.name} descargado`);
+  }
+
+  const DL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>`;
+
+  function downloadButtons(brandId, count) {
+    const dis = count ? "" : "disabled";
+    return `
+      <button class="dl-btn" data-csv="${brandId}" ${dis} title="Planilla para Canva, Excel o Sheets">${DL_ICON}CSV</button>
+      <button class="dl-btn" data-txt="${brandId}" ${dis} title="Texto ordenado por día, listo para enviar">${DL_ICON}Cronograma</button>`;
+  }
+
+  function bindDownloads(root) {
+    root.querySelectorAll("[data-csv]").forEach(btn =>
+      btn.addEventListener("click", e => { e.stopPropagation(); exportCSV(btn.dataset.csv); }));
+    root.querySelectorAll("[data-txt]").forEach(btn =>
+      btn.addEventListener("click", e => { e.stopPropagation(); exportCronograma(btn.dataset.txt); }));
+  }
+
   /* ---------- Selector de marca ---------- */
 
   function renderBrandSelector() {
@@ -494,18 +586,45 @@
       </div>`;
     }
 
+    // Descargas rápidas
+    let dlHTML = "";
+    if (ui.brand === "all") {
+      dlHTML = `
+      <div class="section">
+        <div class="eyebrow">Descargar contenido</div>
+        <div class="dl-list">
+          ${db.brands.map(b => {
+            const n = db.contents.filter(c => c.brandId === b.id).length;
+            return `
+            <div class="dl-row" style="--item-brand:${b.color}">
+              <span class="dl-name">${esc(b.name)}</span>
+              <span class="dl-count">${n} pieza${n !== 1 ? "s" : ""}</span>
+              ${downloadButtons(b.id, n)}
+            </div>`;
+          }).join("")}
+        </div>
+        <p class="dl-help">CSV: planilla para Canva (Creación Masiva), Excel o Sheets · Cronograma: texto ordenado por día para enviar al cliente.</p>
+      </div>`;
+    } else {
+      const n = db.contents.filter(c => c.brandId === ui.brand).length;
+      dlHTML = `<div class="dl-inline">${downloadButtons(ui.brand, n)}</div>`;
+    }
+
     $("#mainView").innerHTML = `
       <h1 class="section-title">${brandName ? esc(brandName) : "Panel general"}</h1>
       <p class="section-sub">${brandName
         ? esc(brandById(ui.brand).descriptor) + " · " + esc(brandById(ui.brand).objective)
         : "Resumen de la semana en todas las marcas"}</p>
+      ${ui.brand !== "all" ? dlHTML : ""}
       ${todayCard}
       ${weekHTML}
       ${brandsHTML}
+      ${ui.brand === "all" ? dlHTML : ""}
     `;
 
     // interacciones
     bindCommon($("#mainView"));
+    bindDownloads($("#mainView"));
     $("#mainView").querySelectorAll("[data-gobrand]").forEach(el => {
       el.addEventListener("click", () => {
         ui.brand = el.dataset.gobrand;

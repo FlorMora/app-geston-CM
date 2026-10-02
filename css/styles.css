@@ -1227,6 +1227,65 @@ textarea { resize: vertical; }
 }
 .import-help b { color: var(--ink-soft); }
 
+/* ---------- Descargas por marca ---------- */
+
+.dl-list { display: grid; gap: 8px; }
+@media (min-width: 720px) {
+  .dl-list { grid-template-columns: 1fr 1fr; }
+}
+.dl-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--item-brand, var(--line));
+  border-radius: var(--radius-sm);
+  padding: 9px 10px 9px 12px;
+}
+.dl-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dl-count {
+  font-size: 11px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.dl-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.dl-btn:disabled { opacity: 0.4; cursor: default; }
+.dl-btn svg { width: 12px; height: 12px; }
+.dl-help {
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  margin-top: 9px;
+}
+.dl-inline { display: flex; gap: 8px; margin: -4px 0 16px; }
+
 /* Escritorio: un poco más de aire */
 @media (min-width: 720px) {
   body { font-size: 15.5px; }

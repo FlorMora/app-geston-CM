@@ -352,7 +352,21 @@
       .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   }
 
-  function downloadFile(name, content, mime) {
+  // Descarga un archivo generado. Dentro del visor de artifacts de
+  // claude.ai las descargas directas están bloqueadas: ahí se usa su API
+  // (window.claude), con confirmación del viewer. Devuelve true si se guardó.
+  async function downloadFile(name, content, mime) {
+    if (window.claude && typeof window.claude.use === "function") {
+      try {
+        const downloads = await window.claude.use("downloads");
+        if (downloads) {
+          await downloads.save({ filename: name, data: content });
+          return true;
+        }
+      } catch (e) {
+        return false; // el viewer canceló o el visor lo rechazó
+      }
+    }
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -362,6 +376,7 @@
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1500);
+    return true;
   }
 
   function brandContentsSorted(brandId) {
@@ -374,7 +389,7 @@
     return '"' + String(v ?? "").replace(/"/g, '""') + '"';
   }
 
-  function exportCSV(brandId) {
+  async function exportCSV(brandId) {
     const b = brandById(brandId);
     const rows = brandContentsSorted(brandId);
     if (!rows.length) { toast(`No hay contenido cargado de ${b.name}`); return; }
@@ -390,12 +405,12 @@
       ].map(csvCell).join(","));
     });
     // BOM para que Excel respete los acentos
-    downloadFile(`contenido-${slugify(b.name)}-${todayISO()}.csv`,
+    const ok = await downloadFile(`contenido-${slugify(b.name)}-${todayISO()}.csv`,
       "﻿" + lines.join("\r\n"), "text/csv;charset=utf-8");
-    toast(`CSV de ${b.name} descargado`);
+    if (ok) toast(`CSV de ${b.name} descargado`);
   }
 
-  function exportCronograma(brandId) {
+  async function exportCronograma(brandId) {
     const b = brandById(brandId);
     const rows = brandContentsSorted(brandId);
     if (!rows.length) { toast(`No hay contenido cargado de ${b.name}`); return; }
@@ -416,9 +431,9 @@
       if (c.copy) out += `  Copy: ${c.copy}\n`;
       if (c.notes) out += `  Notas: ${c.notes}\n`;
     });
-    downloadFile(`cronograma-${slugify(b.name)}-${todayISO()}.txt`,
+    const ok = await downloadFile(`cronograma-${slugify(b.name)}-${todayISO()}.txt`,
       out, "text/plain;charset=utf-8");
-    toast(`Cronograma de ${b.name} descargado`);
+    if (ok) toast(`Cronograma de ${b.name} descargado`);
   }
 
   const DL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>`;
